@@ -12,6 +12,8 @@ function render() {
   renderTasks();
 }
 
+
+//----------------------------------------------------------------Lists----------------------------------------------
 // Function to render lists
 function renderLists() {
   const listsContainer = $('#lists-container');
@@ -42,9 +44,21 @@ function getSelectedList() {
   return sessionStorage.getItem('selectedList') || lists[0]; // Default to the first list if none is selected
 }
 
+//Event listener to add a list
+$('#add-list').click(function() {
+  const newListName = prompt('Enter a new list name:');
+  if(newListName){
+  lists.push(newListName);
+  renderLists();
+  }
+});
+
+//----------------------------------------------------------------Tasks----------------------------------------------
+const tasksContainer = $('#tasks-container');
+
+
 // Function to render tasks
 function renderTasks() {
-  const tasksContainer = $('#tasks-container');
   tasksContainer.empty();
 
 
@@ -64,7 +78,7 @@ function renderTasks() {
 }
 
 // Event listener for adding a new task
-$('#add-task').click(function () {
+$('#add-task').click(function() {
   const list = prompt('Enter the list for the new task:');
   const task = prompt('Enter a new task:');
   const dueDate = prompt('Enter the due date (YYYY-MM-DD):');
@@ -75,6 +89,60 @@ $('#add-task').click(function () {
     render();
   }
 });
+
+// Event listener for edit a task ---------------------------need to change. Not working very well
+tasksContainer.on('click', '.edit-task', function () {
+  const taskElement = $(this).closest('li');
+  const taskName = taskElement.text().trim().split('(')[0].trim();
+  const taskDetails = taskElement.text().trim().replace(taskName, '').replace('-', '').trim();
+  
+  const taskDueDate = taskDetails.split('Due:')[1].split(')')[0].trim();
+  const taskStatus = taskDetails.split(')')[1].split('-')[1].trim();
+  
+  const newTaskName = prompt('Enter the new task name:', taskName);
+  const newDueDate = prompt('Enter the new due date (YYYY-MM-DD):', taskDueDate);
+  const newStatus = prompt('Enter the new status:', taskStatus);
+
+  // Check if the user clicked "Cancel" or didn't enter a new task name
+  if (newTaskName !== null && newTaskName !== taskName) {
+    editTaskAttribute(taskName, 'task', newTaskName);
+  }
+
+  // Check if the user clicked "Cancel" or didn't enter a new due date
+  if (newDueDate !== null && newDueDate !== taskDueDate) {
+    editTaskAttribute(taskName, 'dueDate', newDueDate);
+  }
+
+  // Check if the user clicked "Cancel" or didn't enter a new status
+  if (newStatus !== null && newStatus !== taskStatus) {
+    editTaskAttribute(taskName, 'status', newStatus);
+  }
+
+  render();
+});
+
+// Function to edit a specific attribute of a task
+function editTaskAttribute(taskName, attributeName, newValue) {
+  const taskIndex = tasks.findIndex(task => task.task === taskName);
+  if (taskIndex !== -1) {
+    tasks[taskIndex][attributeName] = newValue;
+  }
+}
+
+// Event listener for delete a task ------------------------------------need to change
+tasksContainer.on('click', '.delete-task', function () {
+  const taskIndex = $(this).closest('li').index();  
+  const confirmDelete = confirm(`Are you sure you want to delete the task?`);
+  
+  if (confirmDelete) {
+    deleteTask(taskIndex);
+    render();
+  }
+});
+
+function deleteTask(taskIndex) {
+  tasks.splice(taskIndex, 1);
+}
 
 // Document ready function
 $(document).ready(function () {
