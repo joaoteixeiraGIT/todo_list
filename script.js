@@ -79,7 +79,7 @@ function renderTasks() {
 
 // Event listener for adding a new task
 $('#add-task').click(function() {
-  const list = prompt('Enter the list for the new task:');
+  const list = getSelectedList();
   const task = prompt('Enter a new task:');
   const dueDate = prompt('Enter the due date (YYYY-MM-DD):');
   const status = prompt('Enter the status (in-progress, not-started, finished):');
