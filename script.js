@@ -69,6 +69,7 @@ function renderTasks() {
   filteredTasks.forEach(task => {
     tasksContainer.append(`
       <li>
+        <input type="checkbox" class="task-checkbox" ${task.status === 'finished' ? 'checked' : ''}>
         ${task.task} (${task.status}) - Due: ${task.dueDate}
         <button class="edit-task">Edit</button>
         <button class="delete-task" data-list="${task.list}" data-task="${task.task}">Delete</button>
@@ -81,14 +82,21 @@ function renderTasks() {
 $('#add-task').click(function() {
   const list = getSelectedList();
   const task = prompt('Enter a new task:');
+  const status = prompt('Enter status:');
   const dueDate = prompt('Enter the due date (YYYY-MM-DD):');
-  const status = prompt('Enter the status (in-progress, not-started, finished):');
+
 
   if (list && task && dueDate && status) {
     tasks.push({ list, task, dueDate, status });
     render();
   }
 });
+
+// //Event listener for checkbox ------------------------------DO THIS AFTER
+// tasksContainer.on('click', '.task-checkbox',function(){
+//   const ischecked = ;
+//   const 
+// });
 
 // Event listener for edit a task ---------------------------need to change. Not working very well
 tasksContainer.on('click', '.edit-task', function () {
