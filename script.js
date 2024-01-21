@@ -1,3 +1,5 @@
+//script.js
+
 // Sample data
 let lists = ['Work', 'Personal'];
 let tasks = [
@@ -6,6 +8,7 @@ let tasks = [
   { list: 'Personal', task: 'Go to the gym', status: 'finished', dueDate: '2023-12-10' }
 ];
 
+const SERVER_URL = 'http://localhost:3000';
 
 function render() {
   renderLists();
@@ -87,8 +90,22 @@ $('#add-task').click(function() {
 
 
   if (list && task && dueDate && status) {
-    tasks.push({ list, task, dueDate, status });
-    render();
+    const newTask = { list, task, dueDate, status }; 
+    tasks.push(newTask);
+ 
+    // Make a POST request to add a new task
+    $.ajax({
+      url: `${SERVER_URL}/tasks`,
+      method: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify(newTask),
+      success: function () {
+        render();
+      },
+      error: function (error) {
+        console.error('Error adding task:', error);
+      }
+    });
   }
 });
 
@@ -131,10 +148,19 @@ tasksContainer.on('click', '.edit-task', function () {
 
 // Function to edit a specific attribute of a task
 function editTaskAttribute(taskName, attributeName, newValue) {
-  const taskIndex = tasks.findIndex(task => task.task === taskName);
-  if (taskIndex !== -1) {
-    tasks[taskIndex][attributeName] = newValue;
-  }
+  //PUT request to update the task
+  $.ajax({
+    url: `${SERVER_URL}/tasks/${taskId}`,
+    method: 'PUT',
+    contentType: 'application/json',
+    data: JSON.stringify({ [attributeName]: newValue }),
+    success: function () {
+      render();
+    },
+    error: function (error) {
+      console.error('Error updating task:', error);
+    }
+  });
 }
 
 // Event listener for delete a task ------------------------------------need to change
@@ -143,16 +169,16 @@ tasksContainer.on('click', '.delete-task', function () {
   const confirmDelete = confirm(`Are you sure you want to delete the task?`);
   
   if (confirmDelete) {
-    deleteTask(taskIndex);
-    render();
+    // Make a DELETE request to delete the task
+    $.ajax({
+      url: `${SERVER_URL}/tasks/${taskId}`,
+      method: 'DELETE',
+      success: function () {
+        render();
+      },
+      error: function (error) {
+        console.error('Error deleting task:', error);
+      }
+    });
   }
-});
-
-function deleteTask(taskIndex) {
-  tasks.splice(taskIndex, 1);
-}
-
-// Document ready function
-$(document).ready(function () {
-  render();
 });
