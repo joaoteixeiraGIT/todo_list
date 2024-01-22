@@ -33,7 +33,7 @@ body {
 }
 
 .list-item.selected {
-  background-color: #333;
+  background-color: #AEB7B3;
   border-radius: 3px; 
 }
 
@@ -50,3 +50,6 @@ body {
     color: #333;
   }
   
+  .task-item.selected {
+    background-color: #AEB7B3;
+  }

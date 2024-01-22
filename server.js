@@ -84,6 +84,24 @@ async function startServer() {
       }
     });
 
+    // Route to delete tasks by list ID
+    app.delete('/lists/:listId/tasks', async (req, res) => {
+      const listId = req.params.listId;
+
+      try {
+        const result = await db.collection('tasks').deleteMany({ listId });
+
+        if (result.deletedCount > 0) {
+          res.status(200).json({ message: 'Tasks deleted successfully' });
+        } else {
+          res.status(200).json({ message:  'No tasks found for the list' });
+        }
+      } catch (error) {
+        console.error('Error deleting tasks:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+      }
+    });
+
     //Route to delete a aList
     app.delete('/lists/:listId', async (req, res) => {
       const listId = req.params.listId;
@@ -131,15 +149,78 @@ async function startServer() {
       } else {
         res.status(500).json({ error: 'Failed to fetch inserted task' });
       }
-    } else {
+      } else {
       res.status(500).json({ error: 'Failed to add task' });
-    }
-  } catch (error) {
+       }
+     } 
+  catch (error) {
     console.error('Error adding task:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
+    // Route to edit tasks
+    app.put('/tasks/:taskId', async (req, res) => {
+      const taskId = req.params.taskId;
+      const newTask = req.body; 
+
+      try {
+        const result = await db.collection('tasks').updateOne(
+          { _id: new ObjectId(taskId) },
+          { $set: newTask }
+        );
+
+        if (result.matchedCount > 0) {
+          res.status(200).json({ message: 'Task updated successfully' });
+        } else {
+          res.status(404).json({ error: 'Task not found' });
+        }
+      } catch (error) {
+        console.error('Error updating task:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+      }
+    });
+
+    //Route for update tasks status
+    app.put('/tasks/:taskId', async (req, res) => {
+      const taskId = req.params.taskId;
+      const newStatus = req.body.status;
     
+      try {
+        const result = await db.collection('tasks').updateOne(
+          { _id: new ObjectId(taskId) },
+          { $set: { status: newStatus } }
+        );
+    
+        if (result.matchedCount > 0) {
+          res.status(200).json({ message: 'Task status updated successfully' });
+        } else {
+          res.status(404).json({ error: 'Task not found' });
+        }
+      } catch (error) {
+        console.error('Error updating task status:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+      }
+    });
+
+    // Delete route for tasks
+    app.delete('/tasks/:taskId', async (req, res) => {
+      const taskId = req.params.taskId;
+
+      try {
+        const result = await db.collection('tasks').deleteOne({ _id: new ObjectId(taskId) });
+
+        if (result.deletedCount > 0) {
+          res.status(200).json({ message: 'Task deleted successfully' });
+        } else {
+          res.status(404).json({ error: 'Task not found' });
+        }
+      } catch (error) {
+        console.error('Error deleting task:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+      }
+    });
+
 
     //Check if server is running
     app.listen(PORT, () => {
