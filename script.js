@@ -101,10 +101,6 @@
 // Event listener for adding a new list
 $(document).on('click', '#add-list', addNewList);
 
-
-// Event listener for Edit List
-$(document).on('click', '#edit-list', editList);
-
 // Function to handle editing the selected list
 async function editList() {
   const selectedListId = getSelectedList();
@@ -135,6 +131,39 @@ async function editList() {
     alert('Please select a list to edit.');
   }
 }
+
+// Event listener for Edit List
+$(document).on('click', '#edit-list', editList);
+
+//Function do delete a List
+async function deleteList() {
+  const selectedListId = getSelectedList();
+
+  if (selectedListId) {
+    try {
+      //DELETE request to remove the list
+      const response = await fetch(`${SERVER_URL}/lists/${selectedListId}`, {
+        method: 'DELETE',
+      });
+
+      const data = await response.json();
+      console.log('List deleted:', data);
+
+      // Clear the selected list after deletion
+      setSelectedList(null);
+
+      // Re-render the lists after deleting
+      await renderLists();
+    } catch (error) {
+      console.error('Error deleting list:', error);
+    }
+  } else {
+    alert('Please select a list to delete.');
+  }
+}
+
+// Event listener for deleting a list
+$(document).on('click', '#delete-list', deleteList);
 
   // Initial rendering of lists
   renderLists();

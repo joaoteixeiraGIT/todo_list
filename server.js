@@ -84,6 +84,24 @@ async function startServer() {
       }
     });
 
+    //Route to delete a aList
+    app.delete('/lists/:listId', async (req, res) => {
+      const listId = req.params.listId;
+    
+      try {
+        const result = await db.collection('lists').deleteOne({ _id: new ObjectId(listId) });
+    
+        if (result.deletedCount > 0) {
+          res.status(200).json({ message: 'List deleted successfully' });
+        } else {
+          res.status(404).json({ error: 'List not found' });
+        }
+      } catch (error) {
+        console.error('Error deleting list:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+      }
+    });
+
 //----------------------------------------------------------Routes for Tasks
       // Route to get tasks for a specific list
       app.get('/lists/:listId/tasks', async (req, res) => {
