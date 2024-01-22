@@ -39,6 +39,9 @@
   listsContainer.on('click', '.list-item', function () {
       const selectedListId = $(this).data('list-id');
       
+      // Remove 'selected' class from all list items
+      $('.list-item').removeClass('selected');
+
       // Set the selected list
       setSelectedList(selectedListId);
     
@@ -97,6 +100,41 @@
 
 // Event listener for adding a new list
 $(document).on('click', '#add-list', addNewList);
+
+
+// Event listener for Edit List
+$(document).on('click', '#edit-list', editList);
+
+// Function to handle editing the selected list
+async function editList() {
+  const selectedListId = getSelectedList();
+  
+  if (selectedListId) {
+    const newListName = prompt('Enter the new name for the list:');
+    
+    if (newListName) {
+      try {
+        const response = await fetch(`${SERVER_URL}/lists/${selectedListId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ name: newListName }),
+        });
+
+        const data = await response.json();
+        console.log('List updated:', data);
+
+        // Re-render the lists after updating
+        await renderLists();
+      } catch (error) {
+        console.error('Error updating list:', error);
+      }
+    }
+  } else {
+    alert('Please select a list to edit.');
+  }
+}
 
   // Initial rendering of lists
   renderLists();

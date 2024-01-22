@@ -1,6 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const { MongoClient } = require('mongodb');
+const { MongoClient, ObjectId } = require('mongodb');
 const app = express();
 const PORT = 3000;
 
@@ -60,6 +60,28 @@ async function startServer() {
     console.error('Error adding list:', error);
     res.status(500).send('Internal Server Error');
   }
+    });
+
+    // Route to update a list
+    app.put('/lists/:listId', async (req, res) => {
+      const listId = req.params.listId;
+      const newName = req.body.name;
+
+      try {
+        const result = await db.collection('lists').updateOne(
+          { _id: new ObjectId(listId) },
+          { $set: { name: newName } }
+        );
+
+        if (result.matchedCount > 0) {
+          res.status(200).json({ message: 'List updated successfully' });
+        } else {
+          res.status(404).json({ error: 'List not found' });
+        }
+      } catch (error) {
+        console.error('Error updating list:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+      }
     });
 
 //----------------------------------------------------------Routes for Tasks
