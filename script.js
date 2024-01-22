@@ -1,184 +1,157 @@
-//script.js
+  //script.js
 
-// Sample data
-let lists = ['Work', 'Personal'];
-let tasks = [
-  { list: 'Work', task: 'Finish report', status: 'in-progress', dueDate: '2023-12-01' },
-  { list: 'Work', task: 'Finish report', status: 'not-started', dueDate: '2023-12-05' },
-  { list: 'Personal', task: 'Go to the gym', status: 'finished', dueDate: '2023-12-10' }
-];
+  const SERVER_URL = 'http://localhost:3000';
+  let selectedListId;
+  let lists;
 
-const SERVER_URL = 'http://localhost:3000';
+  // Function to fetch lists from the server
+  async function fetchLists() {
+    const response = await fetch(`${SERVER_URL}/lists`);
+    return response.json();
+  }
 
-function render() {
-  renderLists();
-  renderTasks();
-}
+  //---------------------------------------------------------------------Lists
 
+  function setSelectedList(listId) {
+    selectedListId = listId;
+  }
+  
+  function getSelectedList() {
+    return selectedListId || (lists && lists.length > 0 ? lists[0]._id : null); //Default to the first list if none is selected
+  }
 
-//----------------------------------------------------------------Lists----------------------------------------------
-// Function to render lists
-function renderLists() {
-  const listsContainer = $('#lists-container');
-  listsContainer.empty();
+  // Function to render lists
+  async function renderLists() {
+    const listsContainer = $('#lists-container');
+    listsContainer.empty();
 
-  lists.forEach(list => {
-    // Check if the list is selected
-    const isSelected = getSelectedList() === list;
-    const listItem = $(`<li class="list-item${isSelected ? ' selected' : ''}">${list}</li>`);
-    listsContainer.append(listItem);
-  });
+    const selectedList = getSelectedList();
+
+    const lists = await fetchLists();
+
+    lists.forEach(list => {
+      const isSelected = selectedList && selectedList.name === list.name;
+      const listItem = $(`<li class="list-item${isSelected ? ' selected' : ''}" data-list-id="${list._id}">${list.name}</li>`);
+      listsContainer.append(listItem);
+    });
 
   // Event listener for clicking on a list item
-  listsContainer.find('.list-item').click(function () {
-    const selectedList = $(this).text().trim();
-    // Set the selected list
-    setSelectedList(selectedList);
-    // Re-render the page to show tasks of the selected list
-    render();
-  });
+  listsContainer.on('click', '.list-item', function () {
+      const selectedListId = $(this).data('list-id');
+      
+      // Set the selected list
+      setSelectedList(selectedListId);
+    
+      // Add 'selected' class to the clicked list item
+      $(this).addClass('selected');
+
+      // Re-render the page to show tasks of the selected list
+      renderTasks(selectedListId);
+    });
+
+    // Function to fetch and render tasks for the selected list
+    async function renderTasks(selectedListId) {
+      // Use the selectedListId to fetch and render tasks
+      const tasks = await fetchTasks(selectedListId);
+      
+      // Render tasks in the UI
+      renderTasksInUI(tasks);
+    }
+
+    // Helper function to render tasks in the UI
+    function renderTasksInUI(tasks) {
+      const tasksContainer = $('#tasks-container');
+      tasksContainer.empty();
+
+      tasks.forEach(task => {
+        const taskItem = $(`<li class="task-item">${task.description}</li>`);
+        tasksContainer.append(taskItem);
+      });
+    }
 }
 
-function setSelectedList(list) {
-  sessionStorage.setItem('selectedList', list);
-}
+  async function addNewList() {
+    const newListName = prompt('Enter a new list name:');
+    if (newListName) {
+      const newList = { name: newListName };
 
-function getSelectedList() {
-  return sessionStorage.getItem('selectedList') || lists[0]; // Default to the first list if none is selected
-}
+      try {
+        const response = await fetch(`${SERVER_URL}/lists`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(newList),
+        });
 
-//Event listener to add a list
-$('#add-list').click(function() {
-  const newListName = prompt('Enter a new list name:');
-  if(newListName){
-  lists.push(newListName);
-  renderLists();
+        const data = await response.json();
+        console.log('New list added:', data);
+
+        // After adding a new list, re-render the lists
+        await renderLists();
+      } catch (error) {
+        console.error('Error adding list:', error);
+      }
+    }
   }
-});
 
-//----------------------------------------------------------------Tasks----------------------------------------------
-const tasksContainer = $('#tasks-container');
+// Event listener for adding a new list
+$(document).on('click', '#add-list', addNewList);
+
+  // Initial rendering of lists
+  renderLists();
 
 
-// Function to render tasks
-function renderTasks() {
+//-----------------------------------------------------------------------TASKS
+
+
+async function fetchTasks(listId) {
+  const response = await fetch(`${SERVER_URL}/lists/${listId}/tasks`);
+  return response.json();
+}
+
+async function renderTasks(listId) {
+  const tasksContainer = $('#tasks-container');
   tasksContainer.empty();
 
+  const tasks = await fetchTasks(listId);
 
-  // Filter tasks based on the selected list
-  const selectedList = getSelectedList();
-  const filteredTasks = tasks.filter(task => task.list === selectedList);
-
-  filteredTasks.forEach(task => {
-    tasksContainer.append(`
-      <li>
-        <input type="checkbox" class="task-checkbox" ${task.status === 'finished' ? 'checked' : ''}>
-        ${task.task} (${task.status}) - Due: ${task.dueDate}
-        <button class="edit-task">Edit</button>
-        <button class="delete-task" data-list="${task.list}" data-task="${task.task}">Delete</button>
-      </li>
-    `);
+  tasks.forEach(task => {
+    const taskItem = $(`<li class="task-item">${task.description}</li>`);
+    tasksContainer.append(taskItem);
   });
 }
 
-// Event listener for adding a new task
-$('#add-task').click(function() {
-  const list = getSelectedList();
-  const task = prompt('Enter a new task:');
-  const status = prompt('Enter status:');
-  const dueDate = prompt('Enter the due date (YYYY-MM-DD):');
+// async function addNewTask(listId) {
+//   const newTaskDescription = prompt('Enter a new task:');
+//   if (newTaskDescription) {
+//     const newTask = { description: newTaskDescription };
 
+//     try {
+//       const response = await fetch(`${SERVER_URL}/lists/${listId}/tasks`, {
+//         method: 'POST',
+//         headers: {
+//           'Content-Type': 'application/json',
+//         },
+//         body: JSON.stringify(newTask),
+//       });
 
-  if (list && task && dueDate && status) {
-    const newTask = { list, task, dueDate, status }; 
-    tasks.push(newTask);
- 
-    // Make a POST request to add a new task
-    $.ajax({
-      url: `${SERVER_URL}/tasks`,
-      method: 'POST',
-      contentType: 'application/json',
-      data: JSON.stringify(newTask),
-      success: function () {
-        render();
-      },
-      error: function (error) {
-        console.error('Error adding task:', error);
-      }
-    });
-  }
-});
+//       const data = await response.json();
+//       console.log('New task added:', data);
 
-// //Event listener for checkbox ------------------------------DO THIS AFTER
-// tasksContainer.on('click', '.task-checkbox',function(){
-//   const ischecked = ;
-//   const 
+//       // After adding a new task, re-render the tasks for the selected list
+//       renderTasks(listId);
+//     } catch (error) {
+//       console.error('Error adding task:', error);
+//     }
+//   }
+// }
+
+// // Event listener for adding a new task
+// $(document).on('click', '#add-task', addNewTask);
+
+// // Event listener for selecting a list and rendering tasks
+// $('#lists-container').on('click', '.list-item', function () {
+//   const listId = $(this).data('list-id');
+//   $('.list-item').removeClass('selected');
 // });
-
-// Event listener for edit a task ---------------------------need to change. Not working very well
-tasksContainer.on('click', '.edit-task', function () {
-  const taskElement = $(this).closest('li');
-  const taskName = taskElement.text().trim().split('(')[0].trim();
-  const taskDetails = taskElement.text().trim().replace(taskName, '').replace('-', '').trim();
-  
-  const taskDueDate = taskDetails.split('Due:')[1].split(')')[0].trim();
-  const taskStatus = taskDetails.split(')')[1].split('-')[1].trim();
-  
-  const newTaskName = prompt('Enter the new task name:', taskName);
-  const newDueDate = prompt('Enter the new due date (YYYY-MM-DD):', taskDueDate);
-  const newStatus = prompt('Enter the new status:', taskStatus);
-
-  // Check if the user clicked "Cancel" or didn't enter a new task name
-  if (newTaskName !== null && newTaskName !== taskName) {
-    editTaskAttribute(taskName, 'task', newTaskName);
-  }
-
-  // Check if the user clicked "Cancel" or didn't enter a new due date
-  if (newDueDate !== null && newDueDate !== taskDueDate) {
-    editTaskAttribute(taskName, 'dueDate', newDueDate);
-  }
-
-  // Check if the user clicked "Cancel" or didn't enter a new status
-  if (newStatus !== null && newStatus !== taskStatus) {
-    editTaskAttribute(taskName, 'status', newStatus);
-  }
-
-  render();
-});
-
-// Function to edit a specific attribute of a task
-function editTaskAttribute(taskName, attributeName, newValue) {
-  //PUT request to update the task
-  $.ajax({
-    url: `${SERVER_URL}/tasks/${taskId}`,
-    method: 'PUT',
-    contentType: 'application/json',
-    data: JSON.stringify({ [attributeName]: newValue }),
-    success: function () {
-      render();
-    },
-    error: function (error) {
-      console.error('Error updating task:', error);
-    }
-  });
-}
-
-// Event listener for delete a task ------------------------------------need to change
-tasksContainer.on('click', '.delete-task', function () {
-  const taskIndex = $(this).closest('li').index();  
-  const confirmDelete = confirm(`Are you sure you want to delete the task?`);
-  
-  if (confirmDelete) {
-    // Make a DELETE request to delete the task
-    $.ajax({
-      url: `${SERVER_URL}/tasks/${taskId}`,
-      method: 'DELETE',
-      success: function () {
-        render();
-      },
-      error: function (error) {
-        console.error('Error deleting task:', error);
-      }
-    });
-  }
-});
