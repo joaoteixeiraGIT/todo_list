@@ -177,6 +177,7 @@ async function fetchTasks(listId) {
   return response.json();
 }
 
+//Render tasks for a scpecif List
 async function renderTasks(listId) {
   const tasksContainer = $('#tasks-container');
   tasksContainer.empty();
@@ -189,36 +190,52 @@ async function renderTasks(listId) {
   });
 }
 
-// async function addNewTask(listId) {
-//   const newTaskDescription = prompt('Enter a new task:');
-//   if (newTaskDescription) {
-//     const newTask = { description: newTaskDescription };
+//Function to add Task
+async function addNewTask(listId) {
+  
+  // Check if a list is selected
+  if (!listId) {
+    alert('Please select a list before adding a task.');
+    return;
+  }
 
-//     try {
-//       const response = await fetch(`${SERVER_URL}/lists/${listId}/tasks`, {
-//         method: 'POST',
-//         headers: {
-//           'Content-Type': 'application/json',
-//         },
-//         body: JSON.stringify(newTask),
-//       });
 
-//       const data = await response.json();
-//       console.log('New task added:', data);
+  const newTaskDescription = prompt('Enter a new task:');
+  const newTaskDueDate = prompt('Enter the due date for the task (format: DD-MM-YYYY):');
+  if (newTaskDescription && newTaskDescription) {
+    const newTask = { description: newTaskDescription , dueDate: newTaskDueDate };
 
-//       // After adding a new task, re-render the tasks for the selected list
-//       renderTasks(listId);
-//     } catch (error) {
-//       console.error('Error adding task:', error);
-//     }
-//   }
-// }
+    try {
+      const response = await fetch(`${SERVER_URL}/lists/${listId}/tasks`, { 
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newTask),
+      });
 
-// // Event listener for adding a new task
-// $(document).on('click', '#add-task', addNewTask);
+      const data = await response.json();
+      console.log('New task added:', data);
 
-// // Event listener for selecting a list and rendering tasks
-// $('#lists-container').on('click', '.list-item', function () {
-//   const listId = $(this).data('list-id');
-//   $('.list-item').removeClass('selected');
-// });
+      // After adding a new task, re-render the tasks for the selected list
+      renderTasks(listId);
+    } catch (error) {
+      console.error('Error adding task:', error);
+    }
+  }
+  else{
+    alert('Please fill all the fields.');
+  }
+}
+
+// Event listener for adding a new task
+$(document).on('click', '#add-task', function () {
+  const selectedListId = getSelectedList();
+  addNewTask(selectedListId);
+});
+
+// Event listener for selecting a list and rendering tasks
+$('#lists-container').on('click', '.list-item', function () {
+  const listId = $(this).data('list-id');
+  $('.list-item').removeClass('selected');
+});

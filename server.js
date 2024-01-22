@@ -114,16 +114,31 @@ async function startServer() {
       // Route to add a new task to a specific list
       app.post('/lists/:listId/tasks', async (req, res) => {
       const listId = req.params.listId;
-      const newTask = { listId, description: req.body.description, completed: false };
+      const { description, dueDate } = req.body;
+      const newTask = { listId, description, dueDate, status: 'inProgress' };
 
       try {
       const result = await db.collection('tasks').insertOne(newTask);
-      res.status(201).json(result.ops[0]);
-      } catch (error) {
-      console.error('Error adding task:', error);
-      res.status(500).send('Internal Server Error');
+
+      console.log('Insert result:', result);
+
+      if (result.insertedId) {
+      // Fetch the inserted document using the _id
+      const insertedDocument = await db.collection('tasks').findOne({ _id: result.insertedId });
+
+      if (insertedDocument) {
+        res.status(201).json(insertedDocument);
+      } else {
+        res.status(500).json({ error: 'Failed to fetch inserted task' });
       }
-    });
+    } else {
+      res.status(500).json({ error: 'Failed to add task' });
+    }
+  } catch (error) {
+    console.error('Error adding task:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
     
 
     //Check if server is running
