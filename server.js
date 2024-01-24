@@ -230,7 +230,6 @@ async function startServer() {
     console.error('Error connecting to MongoDB:', err);
   }
 
-
 }
 
 startServer();

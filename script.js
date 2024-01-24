@@ -39,12 +39,15 @@
   // Event listener for clicking on a list item
   listsContainer.on('click', '.list-item', function () {
       const selectedListId = $(this).data('list-id');
-      
+
       // Remove 'selected' class from all list items
       $('.list-item').removeClass('selected');
 
       // Set the selected list
       setSelectedList(selectedListId);
+
+      // Set selected task to null
+      setSelectedTaskId(null);
     
       // Add 'selected' class to the clicked list item
       $(this).addClass('selected');

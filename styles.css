@@ -1,55 +1,89 @@
 body {
-    font-family: 'Arial', sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f4f4;
-  }
-  
-.container {
-    display: flex;
-    justify-content: space-around;
-    margin: 20px ;
-    gap: 20px;
+  font-family: 'Arial', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
 }
-  
+
+.container {
+  display: flex;
+  justify-content: space-around;
+  margin: 20px;
+  gap: 20px;
+}
+
 .lists {
-    background-color: #fff; 
-    padding: 20px; 
-    border-radius: 8px; 
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); 
-    flex: 1;
-    max-height: 300px; 
-    overflow-y: auto; /* Add a vertical scrollbar when content exceeds the height */ 
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  flex: 1;
+  max-height: 300px;
+  overflow-y: auto;
 }
 
 .tasks {
-    background-color: #eee; 
-    padding: 20px; 
-    border-radius: 8px; 
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); 
-    flex: 2; 
-    max-height: 600px; 
-    overflow-y: auto; /* Add a vertical scrollbar when content exceeds the height */
+  background-color: #F5F1ED;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  flex: 2;
+  max-height: 600px;
+  overflow-y: auto;
 }
 
 .list-item.selected {
-  background-color: #AEB7B3;
-  border-radius: 3px; 
+  background-color: #0C6291;
+  border-radius: 3px;
+  color: #FFFF;
 }
 
-  ul {
-    list-style: none;
-    padding: 0;
-  }
-  
-  li {
-    margin-bottom: 10px;
-  }
-  
-  h2 {
-    color: #333;
-  }
-  
-  .task-item.selected {
-    background-color: #AEB7B3;
-  }
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  margin-bottom: 10px;
+  background-color: #F5F1ED;
+  border-radius: 3px;
+  padding: 10px;
+  color: #001427;
+}
+
+h2 {
+  color: #001427;
+}
+
+.task-item.selected {
+  background-color: #0C6291;
+  color: #FFFF;
+}
+
+
+button {
+  background-color: #70798C;
+  color: #FFFF;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  margin-right: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #001427;
+}
+
+#add-list:hover, #add-task:hover {
+  background-color: #4CAF50;
+}
+
+#edit-list:hover, #edit-task:hover {
+  background-color: #FF9800;
+}
+
+#delete-list:hover, #delete-task:hover {
+  background-color: #F44336;
+}
